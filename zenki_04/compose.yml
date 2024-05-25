@@ -6,3 +6,10 @@ services:
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./public/:/var/www/public/
+    depends_on:
+      - php
+  php:
+    container_name: php
+    image: php:8.1-fpm-alpine
+    volumes:
+      - ./public/:/var/www/public/
