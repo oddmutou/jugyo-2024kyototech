@@ -1,0 +1,15 @@
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./public/:/var/www/public/
+    depends_on:
+      - php
+  php:
+    container_name: php
+    image: php:8.3-fpm-alpine
+    volumes:
+      - ./public/:/var/www/public/
