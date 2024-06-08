@@ -10,6 +10,8 @@ services:
       - php
   php:
     container_name: php
-    image: php:8.3-fpm-alpine
+    build:
+      context: .
+      target: php
     volumes:
       - ./public/:/var/www/public/
