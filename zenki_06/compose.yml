@@ -1,0 +1,17 @@
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./public/:/var/www/public/
+    depends_on:
+      - php
+  php:
+    container_name: php
+    build:
+      context: .
+      target: php
+    volumes:
+      - ./public/:/var/www/public/
