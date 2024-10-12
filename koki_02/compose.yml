@@ -6,6 +6,7 @@ services:
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./public/:/var/www/public/
+      - image:/var/www/upload/image/
     depends_on:
       - php
   php:
@@ -15,6 +16,7 @@ services:
       target: php
     volumes:
       - ./public/:/var/www/public/
+      - image:/var/www/upload/image/
   mysql:
     container_name: mysql
     image: mysql:8.0
@@ -30,4 +32,5 @@ services:
       --collation-server=utf8mb4_unicode_ci
       --max_allowed_packet=4MB
 volumes:
+  image:
   mysql:
