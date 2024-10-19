@@ -39,7 +39,7 @@ $select_sth->execute();
 <form method="POST" action="./bbsimagetest.php" enctype="multipart/form-data">
   <textarea name="body"></textarea>
   <div style="margin: 1em 0;">
-    <input type="file" accept="image/*" name="image">
+    <input type="file" accept="image/*" name="image" id="imageInput">
   </div>
   <button type="submit">送信</button>
 </form>
@@ -61,3 +61,20 @@ $select_sth->execute();
     </dd>
   </dl>
 <?php endforeach ?>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const imageInput = document.getElementById("imageInput");
+  imageInput.addEventListener("change", () => {
+    if (imageInput.files.length < 1) {
+      // 未選択の場合
+      return;
+    }
+    if (imageInput.files[0].size > 5 * 1024 * 1024) {
+      // ファイルが5MBより多い場合
+      alert("5MB以下のファイルを選択してください。");
+      imageInput.value = "";
+    }
+  });
+});
+</script>
