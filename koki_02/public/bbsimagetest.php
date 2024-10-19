@@ -5,7 +5,7 @@ if (isset($_POST['body'])) {
   $image_filename = null;
   if (isset($_FILES['image']) && !empty($_FILES['image']['tmp_name'])) {
     // アップロードされた画像がある場合
-    if (preg_match('/^image\//', $_FILES['image']['type']) !== 1) {
+    if (preg_match('/^image\//', mime_content_type($_FILES['image']['tmp_name'])) !== 1) {
       // アップロードされたものが画像ではなかった場合
       header("HTTP/1.1 302 Found");
       header("Location: ./bbsimagetest.php");
