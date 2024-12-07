@@ -38,7 +38,12 @@ if (isset($_POST['body']) && !empty($_SESSION['login_user_id'])) {
 }
 
 // いままで保存してきたものを取得
-$select_sth = $dbh->prepare('SELECT * FROM bbs_entries ORDER BY created_at DESC');
+// 投稿データを取得。紐づく会員情報も結合し同時に取得する。
+$select_sth = $dbh->prepare(
+  'SELECT bbs_entries.*, users.name AS user_name'
+  . ' FROM bbs_entries INNER JOIN users ON bbs_entries.user_id = users.id'
+  . ' ORDER BY bbs_entries.created_at DESC'
+);
 $select_sth->execute();
 ?>
 
@@ -62,7 +67,8 @@ $select_sth->execute();
     <dd><?= $entry['id'] ?></dd>
     <dt>投稿者</dt>
     <dd>
-      会員ID: <?= htmlspecialchars($entry['user_id']) ?>
+      <?= htmlspecialchars($entry['user_name']) ?>
+      (ID: <?= htmlspecialchars($entry['user_id']) ?>)
     </dd>
     <dt>日時</dt>
     <dd><?= $entry['created_at'] ?></dd>
