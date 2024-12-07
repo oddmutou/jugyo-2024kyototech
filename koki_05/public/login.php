@@ -19,7 +19,7 @@ if (!empty($_POST['email']) && !empty($_POST['password'])) {
   }
 
   // パスワードが正しいかチェック
-  $correct_password = $_POST['password'] === $user['password'];
+  $correct_password = password_verify($_POST['password'], $user['password']);
   if (!$correct_password) {
     // パスワードが間違っていれば、処理を中断しエラー用クエリパラメータ付きのログイン画面URLにリダイレクト
     header("HTTP/1.1 302 Found");

@@ -9,7 +9,7 @@ if (!empty($_POST['name']) && !empty($_POST['email']) && !empty($_POST['password
   $insert_sth->execute([
     ':name' => $_POST['name'],
     ':email' => $_POST['email'],
-    ':password' => $_POST['password'],
+    ':password' => password_hash($_POST['password'], PASSWORD_DEFAULT),
   ]);
 
   // 処理が終わったら完了画面にリダイレクト
