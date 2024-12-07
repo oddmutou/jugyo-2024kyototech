@@ -40,7 +40,7 @@ if (isset($_POST['body']) && !empty($_SESSION['login_user_id'])) {
 // いままで保存してきたものを取得
 // 投稿データを取得。紐づく会員情報も結合し同時に取得する。
 $select_sth = $dbh->prepare(
-  'SELECT bbs_entries.*, users.name AS user_name'
+  'SELECT bbs_entries.*, users.name AS user_name, users.icon_filename AS user_icon_filename'
   . ' FROM bbs_entries INNER JOIN users ON bbs_entries.user_id = users.id'
   . ' ORDER BY bbs_entries.created_at DESC'
 );
@@ -50,6 +50,7 @@ $select_sth->execute();
 <?php if(empty($_SESSION['login_user_id'])): ?>
   投稿するには<a href="/login.php">ログイン</a>が必要です。
 <?php else: ?>
+</div><a href="/icon.php">アイコン画像の設定はこちら</a>。</div>
 <form method="POST" action="./bbs.php" enctype="multipart/form-data">
   <textarea name="body"></textarea>
   <div style="margin: 1em 0;">
@@ -66,7 +67,11 @@ $select_sth->execute();
     <dt>ID</dt>
     <dd><?= $entry['id'] ?></dd>
     <dt>投稿者</dt>
-    <dd>
+    <dd style="display: flex; align-items: center;">
+      <?php if(!empty($entry['user_icon_filename'])): ?>
+        <img src="/image/<?= $entry['user_icon_filename'] ?>" 
+          style="height: 2.5em; width: 2.5em; border-radius: 50%; object-fit: cover; margin: 0.5em;">
+      <?php endif; ?>
       <?= htmlspecialchars($entry['user_name']) ?>
       (ID: <?= htmlspecialchars($entry['user_id']) ?>)
     </dd>
