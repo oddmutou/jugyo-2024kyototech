@@ -36,15 +36,6 @@ if (isset($_POST['body']) && !empty($_SESSION['login_user_id'])) {
   header("Location: ./bbs.php");
   return;
 }
-
-// いままで保存してきたものを取得
-// 投稿データを取得。紐づく会員情報も結合し同時に取得する。
-$select_sth = $dbh->prepare(
-  'SELECT bbs_entries.*, users.name AS user_name, users.icon_filename AS user_icon_filename'
-  . ' FROM bbs_entries INNER JOIN users ON bbs_entries.user_id = users.id'
-  . ' ORDER BY bbs_entries.created_at DESC'
-);
-$select_sth->execute();
 ?>
 
 <?php if(empty($_SESSION['login_user_id'])): ?>
@@ -62,35 +53,75 @@ $select_sth->execute();
 
 <hr>
 
-<?php foreach($select_sth as $entry): ?>
-  <dl style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 1px solid #ccc;">
-    <dt>ID</dt>
-    <dd><?= $entry['id'] ?></dd>
-    <dt>投稿者</dt>
-    <dd style="display: flex; align-items: center;">
-      <?php if(!empty($entry['user_icon_filename'])): ?>
-        <img src="/image/<?= $entry['user_icon_filename'] ?>" 
-          style="height: 2.5em; width: 2.5em; border-radius: 50%; object-fit: cover; margin: 0.5em;">
-      <?php endif; ?>
-      <?= htmlspecialchars($entry['user_name']) ?>
-      (ID: <?= htmlspecialchars($entry['user_id']) ?>)
-    </dd>
-    <dt>日時</dt>
-    <dd><?= $entry['created_at'] ?></dd>
-    <dt>内容</dt>
-    <dd>
-      <?= nl2br(htmlspecialchars($entry['body'])) // 必ず htmlspecialchars() すること ?>
-      <?php if(!empty($entry['image_filename'])): // 画像がある場合は img 要素を使って表示 ?>
-      <div>
-        <img src="/image/<?= $entry['image_filename'] ?>" style="max-height: 10em;">
-      </div>
-      <?php endif; ?>
-    </dd>
-  </dl>
-<?php endforeach ?>
+<dl id="entryTemplate" style="display: none; margin-bottom: 1em; padding-bottom: 1em; border-bottom: 1px solid #ccc;">
+  <dt>番号</dt>
+  <dd data-role="entryIdArea"></dd>
+  <dt>投稿者</dt>
+  <dd>
+    <a href="" data-role="entryUserAnchor">
+      <img data-role="entryUserIconImage"
+        style="height: 2em; width: 2em; border-radius: 50%; object-fit: cover;">
+      <span data-role="entryUserNameArea"></span>
+    </a>
+  </dd>
+  <dt>日時</dt>
+  <dd data-role="entryCreatedAtArea"></dd>
+  <dt>内容</dt>
+  <dd data-role="entryBodyArea">
+  </dd>
+</dl>
+<div id="entriesRenderArea"></div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  const entryTemplate = document.getElementById('entryTemplate');
+  const entriesRenderArea = document.getElementById('entriesRenderArea');
+  const request = new XMLHttpRequest();
+  request.onload = (event) => {
+    const response = event.target.response;
+    response.entries.forEach((entry) => {
+      // テンプレートとするものから要素をコピー
+      const entryCopied = entryTemplate.cloneNode(true);
+      // display: none を display: block に書き換える
+      entryCopied.style.display = 'block';
+
+      // 番号(ID)を表示
+      entryCopied.querySelector('[data-role="entryIdArea"]').innerText = entry.id.toString();
+
+      // アイコン画像が存在する場合は表示 なければimg要素ごと非表示に
+      if (entry.user_icon_file_url) {
+        entryCopied.querySelector('[data-role="entryUserIconImage"]').src = entry.user_icon_file_url;
+      } else {
+        entryCopied.querySelector('[data-role="entryUserIconImage"]').style.display = 'none';
+      }
+      // 名前を表示
+      entryCopied.querySelector('[data-role="entryUserNameArea"]').innerText = entry.user_name;
+
+      // 投稿日時を表示
+      entryCopied.querySelector('[data-role="entryCreatedAtArea"]').innerText = entry.created_at;
+
+      // 本文を表示 (ここはHTMLなのでinnerHTMLで)
+      entryCopied.querySelector('[data-role="entryBodyArea"]').innerHTML = entry.body;
+
+      // 画像が存在する場合に本文の下部に画像を表示
+      if (entry.image_file_url) {
+        const imageElement = new Image();
+        imageElement.src = entry.image_file_url; // 画像URLを設定
+        imageElement.style.display = 'block'; // ブロック要素にする (img要素はデフォルトではインライン要素のため)
+        imageElement.style.marginTop = '1em'; // 画像上部の余白を設定
+        imageElement.style.maxHeight = '300px'; // 画像を表示する最大サイズ(縦)を設定
+        imageElement.style.maxWidth = '300px'; // 画像を表示する最大サイズ(横)を設定
+        entryCopied.querySelector('[data-role="entryBodyArea"]').appendChild(imageElement); // 本文エリアに画像を追加
+      }
+
+      // 最後に実際の描画を行う
+      entriesRenderArea.appendChild(entryCopied);
+    });
+  }
+  request.open('GET', '/bbs_json.php', true); // bbs_json.php を叩く
+  request.responseType = 'json';
+  request.send();
+
   const imageInput = document.getElementById("imageInput");
   imageInput.addEventListener("change", () => {
     if (imageInput.files.length < 1) {
