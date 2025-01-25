@@ -1,0 +1,8 @@
+CREATE TABLE `bbs_entries` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT UNSIGNED NOT NULL,
+    `body` TEXT NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE `bbs_entries` ADD COLUMN image_filename TEXT DEFAULT NULL;
